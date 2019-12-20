@@ -1,0 +1,115 @@
+---
+title: "file_structure_nepal_audio"
+author: "Fiona Spooner"
+date: "12/12/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(stringr)
+```
+
+```{r}
+pam <- list.files("M:/biome_health_project_files/country_files/nepal/acoustic_data/acoustic_monitors/all_areas/Acoustic_Data_2019", full.names = TRUE, recursive = TRUE)
+```
+
+```{r}
+pam <- readRDS("D:/Fiona/Biome_Health_Project/list_nepal_audio_files.RDS")
+
+#filtering out any files which aren't .WAV 
+pam <- pam[grepl(".WAV", pam)]
+
+```
+
+
+
+```{r}
+crt <- read.csv("nepal_audio_locations_updated.csv", stringsAsFactors = FALSE, na.strings = c("","NA"))  #cross reference table for audio sensors and camera sites
+
+crt <- crt %>% 
+  filter(!is.na(Audio.name))
+
+saveRDS(pam, "list_nepal_audio_files.RDS")
+
+```
+
+
+##Getting Audio Sensor ID and formatting it so it matches the one in the cross reference table
+```{r}
+pam_spl <- strsplit(pam, "/")
+
+get_second_last<-function(x){
+  sens_out<-x[[(length(x)-1)]]
+  return(sens_out)
+}
+asi <- lapply(pam_spl, get_second_last)
+asi <- unlist(asi)
+
+pdf <- data.frame(filename = pam, sensor_id = asi)
+
+pdf$asi_num <- gsub("[^0-9]", "", pdf$sensor_id)   #removing anything that's not a number - we need to pad the numbers with zeros so they are all 2 digits long
+
+pdf$asi_pad<- str_pad(pdf$asi_num, width = 2, side = "left", pad = "0")
+
+##now paste A back in front
+
+pdf$asi_crt <- paste0("A", pdf$asi_pad)
+
+```
+
+
+#Linking with camera sensor name so we can
+```{r}
+
+cr_df <- merge(pdf, crt[,c("Station.Camera.Name", "Audio.name")], by.x = "asi_crt", by.y = "Audio.name")
+
+cr_df$site <- gsub('[[:digit:]]+', '', cr_df$Station.Camera.Name)
+
+cr_df$original_filenames <- basename(as.character(cr_df$filename))
+
+cr_df$new_filename <- paste0(cr_df$Station.Camera.Name,"_",cr_df$original_filenames)
+
+cr_df$new_file_path <- paste0("M:/biome_health_project_files/country_files/nepal/working_data/", cr_df$site ,"/", cr_df$Station.Camera.Name, "/PAM/2019/", cr_df$new_filename )
+
+
+cr_df$new_folders <- paste0("M:/biome_health_project_files/country_files/nepal/working_data/", cr_df$site ,"/", cr_df$Station.Camera.Name, "/PAM/2019" )
+
+```
+
+Creating new directories for files to go in.
+
+```{r}
+dir_creator <- function(dir){
+  
+  if(!dir.exists(dir)){
+    dir.create(dir, recursive = TRUE)
+  }
+  
+}
+
+lapply(unique(cr_df$new_folders), dir_creator)
+
+```
+
+
+```{r}
+
+file_sizes <- file.size(cr_df$new_file_path)
+
+still_to_copy <- which(file_sizes < max(file_sizes))
+
+
+files_still_to_copy <- cr_df$new_file_path[still_to_copy]
+
+write.table(files_still_to_copy, "C:/Users/Fiona/Desktop/still_to_copy.txt", row.names = FALSE)
+
+file.copy(as.character(cr_df$filename[still_to_copy]), cr_df$new_file_path[still_to_copy], overwrite = TRUE)
+
+#20001 onwards added overwrite = TRUE
+
+```
