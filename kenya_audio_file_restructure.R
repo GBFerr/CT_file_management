@@ -1,10 +1,12 @@
 library(dplyr)
 
+#Change the directory letter to match the one on your PC - here it is "M"
+
 am_id <- read.csv("M:/biome_health_project_files/country_files/kenya/kenya_audio_locations.csv", stringsAsFactors = FALSE)
 
 sdf <- list.files("K:/", full.names = TRUE)   #list files in the sd card
 
-am <- 14 # the id for the audio moth
+am <- 68 # the id for the audio moth
 
 loc <- am_id %>% 
   filter(audiomoth_id == am)   #filtering to the relevant row in the audio_locations csv
@@ -20,5 +22,3 @@ new_flocs <- paste0("M:/biome_health_project_files/country_files/kenya/working_d
 dir.create(paste0("M:/biome_health_project_files/country_files/kenya/working_data/", site, "/", loc$location_id, "/PAM/2019/"), recursive = TRUE)
 
 file.copy(sdf, new_flocs, overwrite = TRUE)
-
-
