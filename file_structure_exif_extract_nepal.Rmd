@@ -1,7 +1,7 @@
 ---
-title: "File Restructure and Exif Extract"
+title: "File Restructure"
 author: "Fiona Spooner"
-date: "May 14, 2019"
+date: "May 14, 2019; updated on Dec 03 by Guilherme Ferreira"
 output: html_document
 ---
 
@@ -17,7 +17,7 @@ library(reticulate)
 
 
 ##### Lists all the files in the specified RDS folders - it works recursively down them so only the top level folder needs to be specified.  
-
+## Specified folder should have all camera trap images from a field season, stored 
 ```{r, eval = FALSE}
 
 files<-list.files("F:/CAMERA_TRAPPING/", recursive = TRUE, full.names = TRUE)
