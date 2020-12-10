@@ -19,7 +19,7 @@ library(reticulate)
 
 # it gives unique names to each image file and reorganise them in the appropriate and final folder structure
 # it was originally used on camera trap image files that resulted from the 2019 survey, 
-#but can be easily adapated to organise images from subsequent years
+# but can be easily adapated to organise images from subsequent years
  
 ##### Lists all the files in the specified RDS folders - it works recursively down them so only the top level folder needs to be specified.  
 ## Specified folder should have all camera trap images from a field season (2019 season in this example) 
@@ -94,8 +94,8 @@ exif_out$site_cam<-site_cam
 ```
 
 ##### If there are sensors with A and B folders this standardises them. 
-#There was an issue with some folders names 100/101 BTCF rather than a/b in the kenya CT images
-# these additional sub-folders (A/B pr 100/101 BTCF) are created automatically when there is more than 10,000 images in the SD card
+# There was an issue with some folders names 100/101 BTCF rather than a/b in the kenya CT images
+# these additional sub-folders (A/B or 100/101 BTCF) are created automatically when there are more than 10,000 images in the SD card
 
 
 ```{r}
@@ -152,7 +152,7 @@ exif_out$new_img_num<-exif_out$image_num
 
 ```
 
-# Creating unique file numbers - there were duplicates for files in different months and in a/b folders
+# Creating unique file numbers - there were duplicates for files in different months and in a/b and 100/101 BTCF folders
 # Remedy this by adding 20000 to files in subsequent months (i.e. April and May) and 10000 to b files. The numbers are then padded with
 # leading zeros so that they are 6 digits long
 
@@ -223,7 +223,7 @@ saveRDS(exif_out, "nepal_rename_image_file.RDS")
 ```
 
 
-###New File Structure
+### New File Structure
 
 ```{r}
 exif_out<-readRDS("nepal_rename_image_file.RDS")
@@ -237,7 +237,7 @@ exif_out<-readRDS("nepal_rename_image_file.RDS")
 base_path<-"M:/biome_health_project_files/country_files/nepal/working_data"   #creating object string with folder path but does NOT create the path
 ```
 
-##### Data type CT or PAM
+##### Data type CT or PAM - camera trap pr passive acoustic monitoring
 ```{r}
 data_type<-"CT"
 ```
@@ -251,7 +251,7 @@ exif_out$new_dir_structure<-paste(base_path, exif_out$site_id,exif_out$site_cam,
 
 ```
 
-#creating folders 
+# creating folders 
 ```{r, eval= FALSE}
 dir_creator<-function(x){
   dir.create(x, recursive = TRUE)  
@@ -271,10 +271,12 @@ for (i in 1:nrow(exif_out)){
   print(paste0(i, " of " nrow(exif_out)))
 } 
 
-#### here adds file management ####
+
 
 
 ```
+#### here ends file management and starts exif etraction ####
+# exif extraction uses Python - it was too slow in R
 
 ### Getting exif data out using Python image Library
 # this will get info on date, time and other data recorded by the camera trap
